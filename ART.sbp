@@ -1,0 +1,495 @@
+﻿version
+5.80
+2
+qdler
+Form1
+SRch
+4
+16
+3
+0
+5
+6
+0
+0
+7
+0
+0
+6
+20
+5
+0
+1
+0
+0
+1
+0
+238
+268
+
+3
+Regex.dll
+HTTP.dll
+BinaryFile.dll
+3
+Regex.dll
+HTTP.dll
+BinaryFile.dll
+6
+reader:BinaryFile
+request:WebRequest
+re:Regex
+response:WebResponse
+ma:Match
+writer:BinaryFile
+Sub designer
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+addform(qdler,"Downloader","",211,211,211)@
+addlabel(qdler,Label5,35,180,200,27,"Mobilize doesn't affect Q or save",211,211,211,0,0,0,True,True,9)@
+addbutton(qdler,beginQ,80,140,79,25,"Begin",212,208,200,0,0,0,True,True,9)@
+addtextbox(qdler,qdest,10,100,212,21,"\Storage Card\AnimePics",255,255,255,0,0,0,True,True,False,9)@
+addlabel(qdler,Qlbl,25,60,182,27,"Download Q to:",211,211,211,0,0,0,True,True,9)@
+
+addform(Form1,"RandomArt","",211,211,211)@
+addnum(form1,mobH,160,60,62,100,1000,255,255,255,True,True)@
+addnum(form1,mobW,85,60,62,100,1000,255,255,255,True,True)@
+addcheckbox(form1,mobiliz,5,55,75,27,"Mobilize to:",211,211,211,0,0,0,True,True,False,9)@
+addbutton(form1,dfq,90,315,84,25,"Del from Q",212,208,200,0,0,0,True,True,9)@
+addbutton(form1,clrQ,170,315,64,25,"Clear Q",212,208,200,0,0,0,True,True,9)@
+addbutton(form1,dlQ,10,315,85,25,"Download Q",212,208,200,0,0,0,True,True,9)@
+addbutton(form1,toq,170,185,53,25,"To Q",212,208,200,0,0,0,True,True,9)@
+addlistbox(form1,Q,10,220,223,90,"",255,255,255,0,0,0,True,True,0,9)@
+addsavedialog(form1,Saver,165,25,Jpeg|*.jpg)@
+addbutton(form1,rEop,55,185,68,25,"Reopen",212,208,200,0,0,0,True,True,9)@
+addbutton(form1,cls,120,185,52,25,"Clear",212,208,200,0,0,0,True,True,9)@
+addbutton(form1,sv,5,185,58,25,"Save",212,208,200,0,0,0,True,True,9)@
+addlabel(form1,Label2,5,40,243,20,"Pics (last is at the top)",211,211,211,0,0,0,True,True,9)@
+addlistbox(form1,iml,0,85,238,90,"",255,255,255,0,0,0,True,True,0,9)@
+addlabel(form1,spl,5,5,243,20,"Spent during session:",211,211,211,0,0,0,True,True,9)@
+
+addmenuitem(form1,getIt,"Get next",True,False)@r
+addmenuitem(form1,Menu4,"More",True,False)@r
+addmenuitem(menu4,suche,"Search",True,False)@r
+addmenuitem(menu4,Menu6,"Source",True,False)@r
+addmenuitem(menu6,safeb,"Safebooru",True,False)@r
+addmenuitem(menu6,Gelb,"Gelbooru",True,False)@r
+addmenuitem(menu6,vladk,"vladkorotnev.me /art",True,False)@r
+addmenuitem(menu4,Menu12,"-",True,False)@r
+addmenuitem(menu4,abt,"About",True,False)@
+
+
+End Sub
+
+
+
+
+
+
+
+
+
+
+addform(SRch,"Search","",211,211,211)@
+addbutton(srch,clSFi,170,0,31,20,"x",212,208,200,0,0,0,True,True,9)@
+addlabel(srch,Label6,130,295,40,20,"Page:",211,211,211,0,0,0,True,True,9)@
+addcheckbox(srch,srchThumb,0,165,25,27,"",0,0,0,0,0,0,True,True,False,9)@
+addimage(srch,previewer,0,75,248,120,"cCenterImage","",0,0,0,True,True)@
+addbutton(srch,dlSrc,146,320,88,20,"Download",212,208,200,0,0,0,True,True,9)@
+addnum(srch,pgnum,180,295,62,1,100,255,255,255,True,True)@
+addlistbox(srch,Thumbs,50,93,77,54,"",255,255,255,0,0,0,True,False,0,9)@
+addbutton(srch,srchToQ,75,320,79,20,"To Q",212,208,200,0,0,0,True,True,9)@
+addbutton(srch,prvS,5,320,79,20,"Open",212,208,200,0,0,0,True,True,9)@
+addlistbox(srch,Results,5,195,225,100,"",255,255,255,0,0,0,True,True,0,9)@
+addbutton(srch,svSQ,200,35,52,40,"Save",212,208,200,0,0,0,True,True,9)@
+addbutton(srch,schDo,200,0,57,35,"Go",212,208,200,0,0,0,True,True,9)@
+addlistbox(srch,QRs,0,20,199,60,"",255,255,255,0,0,0,True,True,0,9)@
+addtextbox(srch,SrchQ,0,0,171,21,"Query",255,255,255,0,0,0,True,True,False,9)@
+End Sub
+@EndOfDesignText@sub globals
+dim buffer(0) as byte
+dim root 
+dim spent
+dim htmf
+dim urend(0)
+dim fck(0)
+dim dataTotal
+dim qtmp(65533)
+dim prevTagFilter
+end sub
+
+Sub DownloadFile (LocalFile,URL)
+
+Response.New1
+errorlabel(err)
+Request.New1(URL)
+errorlabel(err)
+Response.Value = Request.GetResponse 
+'Launch the request and get the response.
+errorlabel(err)
+spent=spent+response.ContentLength
+Reader.New1(Response.GetStream,true) 'Use a BinaryFile object to read the data from the Response stream.
+errorlabel(err)
+FileOpen(c1,LocalFile,cRandom)
+Writer.New1(c1,false)
+
+dim buffer(4096) as byte
+count = Reader.ReadBytes(buffer(),4096)
+do while count > 0
+Writer.WriteBytes2(buffer(),0,count)
+count = Reader.ReadBytes(buffer(),4096)
+loop
+
+spl.Text="Session: "&(spent/1024)&" KB"
+fileclose(c1)
+Response.Close 'Close the Response stream.
+return true
+err:
+msgbox("failed to download ","shit",cmsgboxok,cmsgboxhand)
+return false
+End Sub
+
+
+
+Sub getHtmUrl(URL)
+
+response.New1
+request.New1(URL)
+errorlabel(fc)
+response.Value=request.GetResponse
+spent=spent+response.ContentLength
+dim astr
+astr= response.GetString
+spl.Text="Session: "&(spent/1024)&" KB"
+Response.Close 'Close the Response stream.
+
+return astr
+fc:
+msgbox("Failed to retrieve "&URL,"shit",cmsgboxok,cmsgboxhand)
+return ""
+end sub
+
+Sub App_Start
+If FileExist ("randart.prefs") = true Then
+fileopen(a,"randart.prefs",cRead)
+mobiliz.Checked=fileread(a)
+mobW.Value=fileread(a)
+mobH.Value=fileread(a)
+qdest.Text=fileread(a)
+fileclose(a)
+end if
+If FileExist ("q.list") = true Then
+	FileOpen (c1,"q.list",cRead)
+	r = FileRead (c1)
+	Do Until r = EOF
+		q.Add(r)
+		r = FileRead (c1)
+	Loop
+	FileClose (c1)
+End if
+If FileExist ("search.list") = true Then
+	FileOpen (c1,"search.list",cRead)
+	r = FileRead (c1)
+	Do Until r = EOF
+		qrs.Add(r)
+		r = FileRead (c1)
+	Loop
+	FileClose (c1)
+End if
+
+ Form1.show
+End Sub
+
+Sub getIt_Click
+waitcursor(true)
+if root="" then
+msgbox("Source not set!","oops",cMsgBoxOK,cMsgBoxExclamation)
+return
+end if
+urk=""
+
+htmf=getHtmUrl(root&"/index.php?page=post&s=random")
+reg="<*\ssrc="&chr(34)&"http://(.*?)"&chr(34)&" id="&chr(34)&"image"&chr(34)
+
+
+re.New2(reg,true,true)
+ma.New1
+ma.Value=re.Match(htmf)
+urk=ma.String
+urk=strReplace(urk," src="&chr(34),"")
+urk=strReplace(urk,chr(34)&" id="&chr(34)&"image"&chr(34),"")
+
+
+iml.Insert(0,urk)
+if mobiliz.Checked=true then 
+msgbox(("please provide your own image mobilizer and uncomment line below here! will download nonmobile now","okay",cmsgboxok,cmsgboxasterisk)
+'urk="http://host/smush/image.php?&width="&mobW.Value&"&height="&mobh.Value&"&image="&urk
+end if
+sleep(1000)
+downloadfile(apppath&"\temp.jpeg",urk)
+shell("pimg.exe",apppath&"\temp.jpeg")
+prefsave
+waitcursor(false)
+End Sub
+
+Sub sv_Click
+if iml.SelectedIndex<0 then return
+saver.Show
+waitcursor(true)
+puto = saver.File
+if puto <> "" then
+if strat(puto,0) <> "\" then puto="\"&puto
+urk=iml.Item(max(0,iml.SelectedIndex))
+
+downloadfile(puto,urk)
+waitcursor(false)
+msgbox("saved to "&puto,"okay",cmsgboxok,cmsgboxasterisk)
+shell("pimg.exe", puto)
+end if
+prefsave
+End Sub
+
+Sub abt_Click
+MsgBox("RandomART for WM"&chr(13)&"By vladkorotnev, 2012"&chr(13)&"Spent > 7 hourz on that app :P"&chr(13)&"sorry fof some bugs","about",cmsgboxok,cmsgboxasterisk)
+End Sub
+
+Sub safeb_Click
+suche.Enabled=true
+root="http://safebooru.org"
+safeb.Checked=true
+gelb.Checked=false
+vladk.Checked=false
+End Sub
+
+Sub Gelb_Click
+suche.Enabled=true
+root="http://gelbooru.com"
+safeb.Checked=false
+gelb.Checked=true
+vladk.Checked=false
+End Sub
+
+Sub vladk_Click
+suche.Enabled=false
+root="http://www.vladkorotnev.me/art"
+safeb.Checked=false
+gelb.Checked=false
+vladk.Checked=true
+End Sub
+
+
+
+Sub cls_Click
+iml.Clear
+End Sub
+
+
+Sub rEop_Click
+prefsave
+if iml.SelectedIndex<0 then return
+
+waitcursor(true)
+urk=iml.Item(max(0,iml.SelectedIndex))
+
+if mobiliz.Checked=true then urk="http://www.vladkorotnev.me/smush/image.php?vladkorotnev=ppcftw&width="&mobW.Value&"&height="&mobh.Value&"&image="&urk
+downloadfile(apppath&"\temp.jpeg",urk)
+
+shell("pimg.exe",apppath&"\temp.jpeg")
+waitcursor(false)
+End Sub
+
+Sub clrQ_Click
+if msgbox("Really?","ClearQ",cMsgBoxYesNo,cMsgBoxHand) = cYes then
+q.Clear
+prefsave
+end if
+End Sub
+
+Sub dlQ_Click
+if q.Count=0 then return
+Qlbl.Text="Download "&q.Count&" images to:"
+qdler.Show
+End Sub
+
+Sub toq_Click
+if iml.SelectedIndex < 0 then return
+urk=iml.Item(max(0,iml.SelectedIndex))
+q.Insert(0,uRk)
+prefsave
+End Sub
+
+Sub beginQ_Click
+
+prefsave
+dircreate(qdest.Text)
+for j = 0 to q.Count-1
+qdler.Text=j
+qtmp(j)=q.Item(j)
+next
+for i = 0 to q.Count-1
+qdler.Text= "DLing "&i&" | Rem "&q.Count
+sleep(100)
+waitcursor(true)
+urk = qtmp(i)
+urend() = strsplit(urk,"/")
+
+fname = urend(arraylen(urend())-1)
+fck() = strsplit(fname,"?")
+fname=fck(0)
+
+if downloadfile(qdest.Text&"\"&fname,urk) = true then q.Remove(urk)
+waitcursor(false)
+next
+qdler.Text="Downloader"
+qdler.Close
+msgbox("Downloaded "&i&" files to "&qdest.Text&". Unprocessed files were left in the Q. ","done",cmsgboxok,cmsgboxasterisk)
+prefsave
+End Sub
+
+sub prefSave
+fileopen(a,"randart.prefs",cWrite)
+filewrite(a,mobiliz.Checked)
+filewrite(a,mobW.Value)
+filewrite(a,mobH.Value)
+filewrite(a,qdest.Text)
+fileclose(a)
+fileopen(c1,"q.list",cWrite)
+for i = 0 to q.Count-1 
+filewrite(c1,q.Item(i))
+next
+fileclose(c1)
+fileopen(c1,"search.list",cWrite)
+for i = 0 to qrs.Count-1
+filewrite(c1,qrs.Item(i))
+next
+fileclose(c1)
+end sub
+
+Sub Form1_Close
+prefsave
+End Sub
+
+Sub dfq_Click
+if q.SelectedIndex > -1 then q.RemoveAt(q.SelectedIndex)
+prefsave
+End Sub
+
+Sub schDo_Click
+waitcursor(true)
+if root="" then
+msgbox("Source not set!","oops",cMsgBoxOK,cMsgBoxExclamation)
+return
+end if
+urk=""
+results.Clear
+thumbs.Clear
+htmf=getHtmUrl(root&"/index.php?page=dapi&s=post&q=index&tags="&strtolower(srchq.text)&"&pid="&pgnum.Value-1)
+reg="<*\spreview_url="&chr(34)&"(.*?)"&chr(34)
+
+
+re.New2(reg,true,true)
+ma.New1
+ma.Value=re.Match(htmf)
+do while ma.Success
+urk=ma.getgroup(1)
+thumbs.add(urk)
+ma.value=ma.nextmatch
+loop
+
+reg="<*\sfile_url="&chr(34)&"(.*?)"&chr(34)
+re.New2(reg,true,true)
+ma.New1
+ma.Value=re.Match(htmf)
+do while ma.Success
+urk=ma.getgroup(1)
+results.add(urk)
+ma.value=ma.nextmatch
+loop
+
+prefsave
+waitcursor(false)
+End Sub
+
+Sub svSQ_Click
+qrs.insert(0,srchq.text)
+End Sub
+
+Sub prvS_Click
+waitcursor(true)
+
+urk=results.Item(results.SelectedIndex)
+iml.Insert(0,urk)
+if mobiliz.Checked=true then urk="http://www.vladkorotnev.me/smush/image.php?vladkorotnev=ppcftw&width="&mobW.Value&"&height="&mobh.Value&"&image="&urk
+sleep(1000)
+downloadfile(apppath&"\temp.jpeg",urk)
+shell("pimg.exe",apppath&"\temp.jpeg")
+prefsave
+waitcursor(false)
+End Sub
+
+Sub srchToQ_Click
+q.Insert(0,results.Item(results.SelectedIndex))
+End Sub
+
+Sub Results_SelectionChanged (Index, Value)
+thumbs.selectedindex=index
+if srchthumb.Checked then
+waitcursor(true)
+if downloadfile(Apppath&"\thumb.jpg",thumbs.Item(index)) then previewer.Image="thumb.jpg"
+waitcursor(false)
+end if
+End Sub
+
+
+
+Sub QRs_SelectionChanged (Index, Value)
+if srchq.Text = "" or srchq.Text = "Query" then srchq.text=QRs.item(index) else srchq.Text=srchq.Text&"+"&qrs.Item(index)
+End Sub
+
+Sub suche_Click
+pgnum.Minimum=1
+srch.Show
+End Sub
+
+
+Sub dlSrc_Click
+saver.Show
+puto = saver.File
+urk = results.Item(results.SelectedIndex)
+if puto <> "" then
+if strat(puto,0) <> "\" then puto="\"&puto
+urk=results.Item(max(0,results.SelectedIndex))
+
+downloadfile(puto,urk)
+waitcursor(false)
+msgbox("saved to "&puto,"okay",cmsgboxok,cmsgboxasterisk)
+shell("pimg.exe",puto)
+end if
+prefsave
+End Sub
+
+Sub SrchQ_KeyPress (key)
+i = srchq.SelectionStart
+j = srchq.SelectionLength
+srchq.Text=strReplace(srchq.Text," ","_")
+srchq.SelectionStart=i
+srchq.SelectionLength=j
+End Sub
+
+Sub clSFi_Click
+srchq.Text=""
+srchq.Focus
+End Sub
